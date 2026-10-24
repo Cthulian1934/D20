@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPG Character Creation Portal</title>
+  <style>
+    /* CSS RESET & VARIABLES */
+    :root {
+      --bg-dark: #0f0e13;
+      --bg-card: #1a1824;
+      --bg-panel: #232030;
+      --bg-input: #12101a;
+      --gold-main: #d4af37;
+      --gold-hover: #f3c846;
+      --gold-dim: #8c7323;
+      --text-main: #f0ecf4;
+      --text-muted: #a09abc;
+      --border-card: #3a354c;
+      --danger: #9e2a2b;
+      --success: #2a9d8f;
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      line-height: 1.4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-card);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--gold-main);
+    }
+
+    /* HEADER */
+    header {
+      background-color: var(--bg-panel);
+      border-bottom: 2px solid var(--gold-main);
+      padding: 1rem 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+
+    .header-content {
+      max-width: 1250px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .app-title {
+      color: var(--gold-main);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    /* BUTTONS */
+    .btn {
+      background-color: var(--bg-card);
+      color: var(--gold-main);
+      border: 1px solid var(--gold-main);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: var(--gold-main);
+      color: #000;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    }
+
+    .btn-primary {
+      background-color: var(--gold-main);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--gold-hover);
+      box-shadow: 0 0 15px rgba(243, 200, 70, 0.6);
+    }
+
+    .btn-danger {
+      background-color: rgba(158, 42, 43, 0.2);
+      color: #ff8888;
+      border-color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger);
+      color: #fff;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: var(--border-card);
+      color: var(--text-muted);
+      background-color: var(--bg-card);
+      box-shadow: none;
+    }
+
+    /* MAIN CONTAINER */
+    main {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      width: 100%;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* WIZARD STEP INDICATOR */
+    .wizard-steps {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      position: relative;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+    }
+
+    .wizard-steps::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--border-card);
+      z-index: 1;
+    }
+
+    .progress-line-active {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      height: 2px;
+      background-color: var(--gold-main);
+      z-index: 2;
+      transition: width 0.3s ease;
+    }
+
+    .step-item {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--bg-card);
+      border: 2px solid var(--border-card);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+
+    .step-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .step-item.active .step-number {
+      background-color: var(--gold-main);
+      border-color: var(--gold-main);
+      color: #000;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+    }
+
+    .step-item.active .step-label {
+      color: var(--gold-main);
+    }
+
+    .step-item.completed .step-number {
+      background-color: var(--bg-panel);
+      border-color: var(--gold-main);
+      color: var(--gold-main);
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      background-color: var(--bg-panel);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-card);
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--gold-main);
+    }
+
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .tag-btn {
+      background-color: var(--bg-card);
+      color: var(--text-muted);
+      border: 1px solid var(--border-card);
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tag-btn:hover {
+      border-color: var(--gold-main);
+      color: var(--text-main);
+    }
+
+    .tag-btn.active {
+      background-color: var(--gold-main);
+      color: #000;
+      border-color: var(--gold-main);
+      font-weight: 700;
+    }
+
+    /* CARDS GRID */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .rpg-card {
+      background-color: var(--bg-card);
+      border: 2px solid var(--border-card);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .rpg-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--gold-main);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 0 10px rgba(212, 175, 55, 0.2);
+    }
+
+    .rpg-card.selected {
+      border-color: var(--gold-main);
+      background-color: #252136;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    }
+
+    .card-img-wrapper {
+      position: relative;
+      height: 260px;
+      width: 100%;
+      background-color: #0a0a0f;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center top;
+      transition: transform 0.4s ease;
+    }
+
+    .rpg-card:hover .card-img {
+      transform: scale(1.03);
+    }
+
+    .badge-tag {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background-color: rgba(15, 14, 19, 0.85);
+      color: var(--gold-main);
+      border: 1px solid var(--gold-dim);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+
+    .selected-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 26px;
+      height: 26px;
+      background-color: var(--gold-main);
+      color: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.85rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .card-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      gap: 0.5rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      color: var(--gold-main);
+      font-weight: 700;
+    }
+
+    .card-subtitle {
+      font-size: 0.75rem;
+      color: #e2cc9d;
+      font-family: monospace;
+      font-weight: 600;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .card-select-btn {
+      width: 100%;
+      padding: 0.4rem;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-card);
+      color: var(--gold-main);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .rpg-card.selected .card-select-btn {
+      background-color: var(--gold-main);
+      color: #000;
+    }
+
+    /* STEP 4: FORM PANEL */
+    .form-panel {
+      background-color: var(--bg-card);
+      border: 2px solid var(--border-card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 950px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .form-section-title {
+      color: var(--gold-main);
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-card);
+      padding-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .stat-box label {
+      font-size: 0.8rem;
+      color: var(--gold-main);
+      font-weight: 700;
+    }
+
+    .stat-box input[type="number"] {
+      width: 55px;
+      padding: 0.3rem;
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-card);
+      border-radius: 4px;
+      color: #fff;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      outline: none;
+    }
+
+    .mod-checkbox-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      cursor: pointer;
+    }
+
+    .selection-toggle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      background-color: var(--bg-panel);
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-card);
+    }
+
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .toggle-item input[type="checkbox"] {
+      accent-color: var(--gold-main);
+    }
+
+    /* NAVIGATION BAR */
+    .nav-bar {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-card);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-status {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       STEP 5: REAL D&D CHARACTER SHEET LAYOUT
+       ========================================================================== */
+    .sheet-wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .cs-sheet {
+      background-color: #161420;
+      border: 2px solid var(--gold-main);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* CS HEADER FRAME */
+    .cs-header {
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+      gap: 1rem;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--gold-dim);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      align-items: center;
+    }
+
+    .cs-name-box h1 {
+      font-size: 1.6rem;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .cs-name-box label {
+      font-size: 0.65rem;
+      color: var(--gold-main);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: bold;
+    }
+
+    .cs-header-fields {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem 0.75rem;
+    }
+
+    .cs-field {
+      border-bottom: 1px solid var(--border-card);
+      padding-bottom: 0.15rem;
+    }
+
+    .cs-field .val {
+      font-size: 0.85rem;
+      color: #fff;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cs-field label {
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: bold;
+      display: block;
+    }
+
+    /* CS MAIN LAYOUT GRID (3 COLUMNS) */
+    .cs-main-grid {
+      display: grid;
+      grid-template-columns: 220px 280px 1fr;
+      gap: 1rem;
+    }
+
+    /* COLUMN 1: ABILITIES, SAVES, PASSIVES */
+    .cs-col-1 {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .cs-ability-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .cs-ability-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      padding: 0.35rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .cs-ability-card.modified {
+      border-color: var(--gold-main);
+    }
+
+    .cs-ability-label {
+      font-size: 0.7rem;
+      color: var(--gold-main);
+      font-weight: 800;
+      width: 35px;
+    }
+
+    .cs-ability-mod {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      background-color: var(--bg-panel);
+      padding: 0.1rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--gold-dim);
+      min-width: 42px;
+      text-align: center;
+    }
+
+    .cs-ability-score {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      width: 30px;
+      text-align: right;
+    }
+
+    .cs-box {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      padding: 0.6rem;
+    }
+
+    .cs-box-title {
+      font-size: 0.65rem;
+      color: var(--gold-main);
+      font-weight: 800;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-card);
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.5px;
+    }
+
+    .cs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .cs-list-item {
+      display: flex;
+      align-items: center;
+      font-size: 0.7rem;
+      gap: 0.35rem;
+    }
+
+    .cs-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      border: 1px solid var(--gold-main);
+      background-color: transparent;
+      display: inline-block;
+    }
+
+    .cs-dot.active {
+      background-color: var(--gold-main);
+    }
+
+    .cs-list-val {
+      font-weight: 700;
+      color: #fff;
+      min-width: 22px;
+    }
+
+    .cs-list-lbl {
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cs-passive-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      padding: 0.15rem 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.05);
+    }
+
+    .cs-passive-item .val {
+      font-weight: bold;
+      color: var(--gold-hover);
+    }
+
+    /* COLUMN 2: COMBAT & SKILLS */
+    .cs-col-2 {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .cs-combat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.4rem;
+    }
+
+    .cs-combat-tile {
+      background-color: var(--bg-card);
+      border: 1px solid var(--gold-dim);
+      border-radius: 6px;
+      padding: 0.4rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cs-combat-tile .val {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--gold-main);
+      line-height: 1.1;
+    }
+
+    .cs-combat-tile .lbl {
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: bold;
+      margin-top: 0.15rem;
+    }
+
+    .cs-hp-box {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      text-align: center;
+    }
+
+    .cs-hp-sub {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cs-hp-sub .val {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .cs-hp-sub .lbl {
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* COLUMN 3: FEATURE CARDS (SPECIES, CLASS, BG) */
+    .cs-col-3 {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .cs-feature-card {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      padding: 0.6rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .cs-feature-img {
+      width: 75px;
+      height: 90px;
+      object-fit: contain;
+      background-color: #0d0c12;
+      border-radius: 4px;
+      border: 1px solid var(--gold-dim);
+      flex-shrink: 0;
+    }
+
+    .cs-feature-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .cs-feature-title {
+      font-size: 0.9rem;
+      color: var(--gold-main);
+      font-weight: bold;
+    }
+
+    .cs-feature-sub {
+      font-size: 0.7rem;
+      color: #e2cc9d;
+      font-family: monospace;
+      font-weight: bold;
+    }
+
+    .cs-feature-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    /* MODAL FOR EDITING */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background-color: var(--bg-card);
+      border: 2px solid var(--gold-main);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+    }
+
+    .modal-header {
+      padding: 1rem;
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border-card);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      color: var(--gold-main);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-footer {
+      padding: 1rem;
+      background-color: var(--bg-panel);
+      border-top: 1px solid var(--border-card);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      color: var(--gold-main);
+      font-weight: 600;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      padding: 0.6rem;
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-card);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: var(--gold-main);
+      color: #000;
+      padding: 0.75rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 700;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 200;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      header, .wizard-steps, .toolbar, .nav-bar, .no-print, .header-buttons {
+        display: none !important;
+      }
+      body {
+        background-color: #fff !important;
+        color: #000 !important;
+      }
+      .cs-sheet {
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .cs-header, .cs-box, .cs-feature-card, .cs-ability-card, .cs-combat-tile {
+        background: #f8f8f8 !important;
+        border: 1px solid #aaa !important;
+      }
+      .cs-name-box h1, .cs-field .val, .cs-feature-title, .cs-box-title, .cs-combat-tile .val, .cs-ability-mod, .cs-list-val {
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-content">
+      <div class="app-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>RPG Character Portal</span>
+      </div>
+      <div class="header-buttons">
+        <button onclick="openEditorModal()" class="btn">⚙️ Teacher Content Mode</button>
+        <button onclick="resetAllSelections()" class="btn btn-danger">↺ Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main>
+    <!-- 5-STEP WIZARD INDICATOR -->
+    <div class="wizard-steps no-print">
+      <div class="progress-line-active" id="progress-line"></div>
+      
+      <button onclick="goToStep(1)" class="step-item active" id="step-btn-1">
+        <div class="step-number" id="step-num-1">1</div>
+        <span class="step-label">Species</span>
+      </button>
+
+      <button onclick="goToStep(2)" class="step-item" id="step-btn-2">
+        <div class="step-number" id="step-num-2">2</div>
+        <span class="step-label">Class</span>
+      </button>
+
+      <button onclick="goToStep(3)" class="step-item" id="step-btn-3">
+        <div class="step-number" id="step-num-3">3</div>
+        <span class="step-label">Background</span>
+      </button>
+
+      <button onclick="goToStep(4)" class="step-item" id="step-btn-4">
+        <div class="step-number" id="step-num-4">4</div>
+        <span class="step-label">Stats & Level</span>
+      </button>
+
+      <button onclick="goToStep(5)" class="step-item" id="step-btn-5">
+        <div class="step-number" id="step-num-5">5</div>
+        <span class="step-label">Summary</span>
+      </button>
+    </div>
+
+    <!-- STEP 1: SPECIES SELECTION -->
+    <section id="step-section-1" class="step-panel">
+      <div class="toolbar no-print">
+        <input type="text" id="species-search" oninput="filterSpecies()" placeholder="🔍 Search through all 76 species by name or trait..." class="search-input">
+        <div class="filter-tags" id="species-cat-tags">
+          <button onclick="filterCategory('all')" class="tag-btn active" data-cat="all">All (76)</button>
+          <button onclick="filterCategory('core')" class="tag-btn" data-cat="core">Core & Humanoid</button>
+          <button onclick="filterCategory('fey')" class="tag-btn" data-cat="fey">Fey & Nature</button>
+          <button onclick="filterCategory('monstrous')" class="tag-btn" data-cat="monstrous">Monstrous</button>
+          <button onclick="filterCategory('planar')" class="tag-btn" data-cat="planar">Planar & Exotic</button>
+          <button onclick="filterCategory('construct')" class="tag-btn" data-cat="construct">Constructs & Undead</button>
+        </div>
+      </div>
+      <div class="cards-grid" id="species-grid"></div>
+    </section>
+
+    <!-- STEP 2: CLASS SELECTION -->
+    <section id="step-section-2" class="step-panel hidden">
+      <div class="cards-grid" id="class-grid"></div>
+    </section>
+
+    <!-- STEP 3: BACKGROUND SELECTION -->
+    <section id="step-section-3" class="step-panel hidden">
+      <div class="cards-grid" id="bg-grid"></div>
+    </section>
+
+    <!-- STEP 4: STATS & LEVEL INPUTS -->
+    <section id="step-section-4" class="step-panel hidden">
+      <div class="form-panel">
+        <div class="form-section-title">Hero Identity</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+          <div class="form-group">
+            <label>Character Name</label>
+            <input type="text" id="input-char-name" placeholder="Enter hero name..." oninput="updateCharName(this.value)">
+          </div>
+          <div class="form-group">
+            <label>Player / Student Name</label>
+            <input type="text" id="input-player-name" placeholder="Enter student name..." oninput="updatePlayerName(this.value)">
+          </div>
+          <div class="form-group">
+            <label>Character Level (1–20)</label>
+            <select id="input-level-select" onchange="updateLevel(this.value)"></select>
+          </div>
+        </div>
+
+        <div class="form-section-title">Ability Scores & Modifiers</div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">Enter base stats (1–20) and check the box if a species/class bonus modifier is applied.</p>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <label>STR</label>
+            <input type="number" id="stat-str" value="10" min="1" max="30" onchange="updateStats()">
+            <label class="mod-checkbox-label"><input type="checkbox" id="mod-str" onchange="updateStats()"> Mod (+2)</label>
+          </div>
+          <div class="stat-box">
+            <label>DEX</label>
+            <input type="number" id="stat-dex" value="10" min="1" max="30" onchange="updateStats()">
+            <label class="mod-checkbox-label"><input type="checkbox" id="mod-dex" onchange="updateStats()"> Mod (+2)</label>
+          </div>
+          <div class="stat-box">
+            <label>CON</label>
+            <input type="number" id="stat-con" value="10" min="1" max="30" onchange="updateStats()">
+            <label class="mod-checkbox-label"><input type="checkbox" id="mod-con" onchange="updateStats()"> Mod (+2)</label>
+          </div>
+          <div class="stat-box">
+            <label>INT</label>
+            <input type="number" id="stat-int" value="10" min="1" max="30" onchange="updateStats()">
+            <label class="mod-checkbox-label"><input type="checkbox" id="mod-int" onchange="updateStats()"> Mod (+2)</label>
+          </div>
+          <div class="stat-box">
+            <label>WIS</label>
+            <input type="number" id="stat-wis" value="10" min="1" max="30" onchange="updateStats()">
+            <label class="mod-checkbox-label"><input type="checkbox" id="mod-wis" onchange="updateStats()"> Mod (+2)</label>
+          </div>
+          <div class="stat-box">
+            <label>CHA</label>
+            <input type="number" id="stat-cha" value="10" min="1" max="30" onchange="updateStats()">
+            <label class="mod-checkbox-label"><input type="checkbox" id="mod-cha" onchange="updateStats()"> Mod (+2)</label>
+          </div>
+        </div>
+
+        <div class="form-section-title">Saving Throw Proficiencies</div>
+        <div class="selection-toggle-grid">
+          <label class="toggle-item"><input type="checkbox" id="save-str" onchange="updateToggles()"> Strength</label>
+          <label class="toggle-item"><input type="checkbox" id="save-dex" onchange="updateToggles()"> Dexterity</label>
+          <label class="toggle-item"><input type="checkbox" id="save-con" onchange="updateToggles()"> Constitution</label>
+          <label class="toggle-item"><input type="checkbox" id="save-int" onchange="updateToggles()"> Intelligence</label>
+          <label class="toggle-item"><input type="checkbox" id="save-wis" onchange="updateToggles()"> Wisdom</label>
+          <label class="toggle-item"><input type="checkbox" id="save-cha" onchange="updateToggles()"> Charisma</label>
+        </div>
+
+        <div class="form-section-title">Skill Proficiencies</div>
+        <div class="selection-toggle-grid" id="skills-toggle-container">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: D&D CHARACTER SHEET SUMMARY -->
+    <section id="step-section-5" class="step-panel hidden">
+      <div class="sheet-wrapper">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;" class="no-print">
+          <button onclick="window.print()" class="btn btn-primary">🖨️ Print Character Sheet</button>
+        </div>
+
+        <div class="cs-sheet" id="printable-card">
+          <!-- HEADER FRAME -->
+          <div class="cs-header">
+            <div class="cs-name-box">
+              <h1 id="cs-char-name">Unnamed Hero</h1>
+              <label>Character Name</label>
+            </div>
+            <div class="cs-header-fields">
+              <div class="cs-field">
+                <div class="val" id="cs-hdr-class">Fighter</div>
+                <label>Class & Level</label>
+              </div>
+              <div class="cs-field">
+                <div class="val" id="cs-hdr-species">Human</div>
+                <label>Species</label>
+              </div>
+              <div class="cs-field">
+                <div class="val" id="cs-hdr-bg">Soldier</div>
+                <label>Background</label>
+              </div>
+              <div class="cs-field">
+                <div class="val" id="cs-hdr-player">Player Name</div>
+                <label>Player</label>
+              </div>
+              <div class="cs-field">
+                <div class="val" id="cs-hdr-prof">+2</div>
+                <label>Proficiency Bonus</label>
+              </div>
+              <div class="cs-field">
+                <div class="val">Medium</div>
+                <label>Size</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- MAIN 3-COLUMN GRID -->
+          <div class="cs-main-grid">
+            
+            <!-- COLUMN 1: ABILITIES, SAVES, PASSIVES -->
+            <div class="cs-col-1">
+              <div class="cs-ability-stack" id="cs-ability-container">
+                <!-- STR, DEX, CON, INT, WIS, CHA Cards populated via JS -->
+              </div>
+
+              <!-- SAVING THROWS -->
+              <div class="cs-box">
+                <div class="cs-box-title">Saving Throws</div>
+                <div class="cs-list" id="cs-saves-container"></div>
+              </div>
+
+              <!-- PASSIVE SENSES -->
+              <div class="cs-box">
+                <div class="cs-box-title">Passive Senses</div>
+                <div class="cs-passive-item">
+                  <span>Passive Perception</span>
+                  <span class="val" id="cs-passive-perception">10</span>
+                </div>
+                <div class="cs-passive-item">
+                  <span>Passive Investigation</span>
+                  <span class="val" id="cs-passive-investigation">10</span>
+                </div>
+                <div class="cs-passive-item">
+                  <span>Passive Insight</span>
+                  <span class="val" id="cs-passive-insight">10</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- COLUMN 2: COMBAT & SKILLS -->
+            <div class="cs-col-2">
+              <div class="cs-combat-grid">
+                <div class="cs-combat-tile">
+                  <span class="val" id="cs-val-ac">10</span>
+                  <span class="lbl">Armor Class</span>
+                </div>
+                <div class="cs-combat-tile">
+                  <span class="val" id="cs-val-init">+0</span>
+                  <span class="lbl">Initiative</span>
+                </div>
+                <div class="cs-combat-tile">
+                  <span class="val">30 ft</span>
+                  <span class="lbl">Speed</span>
+                </div>
+              </div>
+
+              <div class="cs-hp-box">
+                <div class="cs-hp-sub">
+                  <span class="val" id="cs-val-hp">--</span>
+                  <span class="lbl">Max Hit Points</span>
+                </div>
+                <div style="height:25px; width:1px; background:var(--border-card);"></div>
+                <div class="cs-hp-sub">
+                  <span class="val" id="cs-val-hitdie">1d8</span>
+                  <span class="lbl">Total Hit Dice</span>
+                </div>
+              </div>
+
+              <!-- SKILLS LIST -->
+              <div class="cs-box" style="flex-grow:1;">
+                <div class="cs-box-title">Skills</div>
+                <div class="cs-list" id="cs-skills-container"></div>
+              </div>
+            </div>
+
+            <!-- COLUMN 3: FEATURE CARDS -->
+            <div class="cs-col-3">
+              <div class="cs-feature-card">
+                <img id="cs-img-species" class="cs-feature-img" src="" alt="Species">
+                <div class="cs-feature-content">
+                  <div class="cs-feature-title" id="cs-title-species">Species</div>
+                  <div class="cs-feature-sub" id="cs-sub-species">Traits</div>
+                  <div class="cs-feature-desc" id="cs-desc-species">Description</div>
+                </div>
+              </div>
+
+              <div class="cs-feature-card">
+                <img id="cs-img-class" class="cs-feature-img" src="" alt="Class">
+                <div class="cs-feature-content">
+                  <div class="cs-feature-title" id="cs-title-class">Class</div>
+                  <div class="cs-feature-sub" id="cs-sub-class">Stats</div>
+                  <div class="cs-feature-desc" id="cs-desc-class">Description</div>
+                </div>
+              </div>
+
+              <div class="cs-feature-card">
+                <img id="cs-img-bg" class="cs-feature-img" src="" alt="Background">
+                <div class="cs-feature-content">
+                  <div class="cs-feature-title" id="cs-title-bg">Background</div>
+                  <div class="cs-feature-sub" id="cs-sub-bg">Skills</div>
+                  <div class="cs-feature-desc" id="cs-desc-bg">Description</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NAVIGATION BAR -->
+    <div class="nav-bar no-print">
+      <button id="nav-prev-btn" onclick="nextStep(-1)" class="btn" disabled>← Back</button>
+      <span class="nav-status" id="nav-status-text">Step 1 of 5: Select Species</span>
+      <button id="nav-next-btn" onclick="nextStep(1)" class="btn btn-primary">Next: Class →</button>
+    </div>
+  </main>
+
+  <!-- CONTENT EDITOR MODAL -->
+  <div class="modal-overlay" id="editor-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Custom Content & Image Editor</h3>
+        <button onclick="closeEditorModal()" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.8rem; color:var(--text-muted)">Edit details or change image sources for cards. Images can be pasted as URLs or uploaded from local storage.</p>
+        
+        <div class="form-group">
+          <label>1. Select Category</label>
+          <select id="edit-cat-select" onchange="populateItemDropdown()">
+            <option value="species">Species</option>
+            <option value="classes">Classes</option>
+            <option value="backgrounds">Backgrounds</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>2. Select Item to Edit</label>
+          <select id="edit-item-select" onchange="loadItemToEditor()"></select>
+        </div>
+
+        <div class="form-group">
+          <label>Card Title / Name</label>
+          <input type="text" id="edit-input-title">
+        </div>
+
+        <div class="form-group">
+          <label>Sub-heading / Key Traits</label>
+          <input type="text" id="edit-input-sub">
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="edit-input-desc" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Option A: Image URL</label>
+          <input type="text" id="edit-input-imgurl" placeholder="https://example.com/image.jpg">
+        </div>
+
+        <div class="form-group">
+          <label>Option B: Upload Local File</label>
+          <input type="file" id="edit-input-file" accept="image/*" onchange="handleFileSelect(event)">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="resetCategoryToDefaults()" class="btn btn-danger" style="margin-right:auto">Reset Category</button>
+        <button onclick="closeEditorModal()" class="btn">Cancel</button>
+        <button onclick="saveCardEdits()" class="btn btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST MESSAGE -->
+  <div class="toast" id="toast-msg">Action successful!</div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // SKILLS LIST MAPPING WITH GOVERNING ABILITIES
+    const SKILLS_LIST = [
+      { name: 'Acrobatics', stat: 'dex' },
+      { name: 'Animal Handling', stat: 'wis' },
+      { name: 'Arcana', stat: 'int' },
+      { name: 'Athletics', stat: 'str' },
+      { name: 'Deception', stat: 'cha' },
+      { name: 'History', stat: 'int' },
+      { name: 'Insight', stat: 'wis' },
+      { name: 'Intimidation', stat: 'cha' },
+      { name: 'Investigation', stat: 'int' },
+      { name: 'Medicine', stat: 'wis' },
+      { name: 'Nature', stat: 'int' },
+      { name: 'Perception', stat: 'wis' },
+      { name: 'Performance', stat: 'cha' },
+      { name: 'Persuasion', stat: 'cha' },
+      { name: 'Religion', stat: 'int' },
+      { name: 'Sleight of Hand', stat: 'dex' },
+      { name: 'Stealth', stat: 'dex' },
+      { name: 'Survival', stat: 'wis' }
+    ];
+
+    // SPECIES DATA
+    const SPECIES_DATA = [
+      { id: 'aasimar', cat: 'planar', title: 'Aasimar', sub: 'Celestial Resistance, Healing Hands', desc: 'Carrying celestial blood, Aasimars champion cosmic order and divine warmth.', img: 'Aasimar.png' },
+      { id: 'arachne', cat: 'monstrous', title: 'Arachne', sub: 'Web Walker, Spider Climb', desc: 'Half-humanoid and half-spider beings who weave intricate traps and traverse caverns.', img: 'Arachne.png' },
+      { id: 'aetherborn', cat: 'planar', title: 'Aetherborn', sub: 'Aetheric Essence, Darkvision', desc: 'Beings formed as a byproduct of magical refining, living brief but passionate lives.', img: 'Aetherborn.png' },
+      { id: 'automatons', cat: 'construct', title: 'Automatons', sub: 'Clockwork Body, Armor Plating', desc: 'Precision mechanical beings driven by gears, springs, and intricate arcane clockwork.', img: 'Automation.png' },
+      { id: 'boggart', cat: 'fey', title: 'Boggart', sub: 'Shapeshift Fear, Illusion Magic', desc: 'Tricky, shadowy fey folk known for taking on frightful forms and dwelling in quiet corners.', img: 'Boggart.png' },
+      { id: 'bugbear', cat: 'monstrous', title: 'Bugbear', sub: 'Long-Limbed, Sneaky, Ambush', desc: 'Large, hairy goblinoids with surprising stealth and terrifying ambush strength.', img: 'Bugbear.jpg' },
+      { id: 'cecaelia', cat: 'monstrous', title: 'Cecaelia', sub: 'Tentacle Grapple, Amphibious', desc: 'Deep-ocean dwellers possessing a humanoid upper body and octopus tentacles below.', img: 'Cecaelia.png' },
+      { id: 'centaur', cat: 'fey', title: 'Centaur', sub: 'Hooves, Charge Attack, Fey Nature', desc: 'Nomadic wanderers with human upper bodies and equine lower torsos, guardians of open plains.', img: 'Centaur.png' },
+      { id: 'changeling', cat: 'planar', title: 'Changeling', sub: 'Shapechanger, Mask of Faces', desc: 'Master manipulators who can subtly shift their physical features to match any humanoid.', img: 'Changling.png' },
+      { id: 'cyclops', cat: 'monstrous', title: 'Cyclops', sub: 'Single Eye, Mighty Throw', desc: 'Towering one-eyed giants possessing immense physical power and ancient elemental ties.', img: 'Cyclops.png' },
+      { id: 'deep-imaskari', cat: 'planar', title: 'Deep Imaskari', sub: 'Spell-Hardened, Underground Sight', desc: 'Deep-subterranean human lineages refined by generations of intense magical study.', img: 'Deep Imaskari.png' },
+      { id: 'dhampir', cat: 'construct', title: 'Dhampir', sub: 'Vampiric Bite, Deathless', desc: 'Walking the boundary between life and death, dhampirs inherit undead traits without corruption.', img: 'Dhampir.png' },
+      { id: 'dragonborn', cat: 'core', title: 'Dragonborn', sub: 'Breath Weapon, Elemental Resistance', desc: 'Proud draconian humanoids carrying elemental breath weapons and dragon ancestry.', img: 'Dragonborn.png' },
+      { id: 'drider', cat: 'monstrous', title: 'Drider', sub: 'Spider Legs, Subterranean Agility', desc: 'Half-drow and half-giant spider wanderers with subterranean agility and innate spellcasting.', img: 'Drider.png' },
+      { id: 'duergar', cat: 'core', title: 'Duergar', sub: 'Superior Darkvision, Enlarge', desc: 'Subterranean gray dwarves with innate psionic powers and unbreakable dwarven grit.', img: 'Duergar.png' },
+      { id: 'dvati', cat: 'planar', title: 'Dvati', sub: 'Twin Souls, Shared Mind', desc: 'A rare species born as two physical bodies sharing a single united soul and consciousness.', img: 'Dvati.png' },
+      { id: 'dwarf', cat: 'core', title: 'Dwarf', sub: 'Darkvision, Poison Resilience', desc: 'Bold and hardy warriors, miners, and stone artisans of mountain strongholds.', img: 'Dwarf.png' },
+      { id: 'elf', cat: 'core', title: 'Elf', sub: 'Darkvision, Fey Ancestry, Trance', desc: 'A magical people of supernatural grace and long lives in harmony with ancient wilderness.', img: 'Elf.png' },
+      { id: 'faerie', cat: 'fey', title: 'Faerie', sub: 'Flight, Fey Magic, Tiny Size', desc: 'Diminutive winged fey creatures brimming with playful nature magic and curiosity.', img: 'Fairy.jpg' },
+      { id: 'firbolg', cat: 'fey', title: 'Firbolg', sub: 'Hidden Step, Speech of Beast/Leaf', desc: 'Gentle giant forest guardians who command powerful nature magic to protect their groves.', img: 'Firbolg.png' },
+      { id: 'flamekin', cat: 'planar', title: 'Flamekin', sub: 'Fire Resistance, Ignite', desc: 'Elemental beings composed of living flame, glowing coal, and blazing emotion.', img: 'Flamekin.png' },
+      { id: 'genasi', cat: 'planar', title: 'Genasi', sub: 'Elemental Heritage (Air, Earth, Fire, Water)', desc: 'Mortals touched by the power of genie kin and the elemental planes of existence.', img: 'Genasi.jpg' },
+      { id: 'gith', cat: 'planar', title: 'Gith', sub: 'Psionic Power, Astral Drift', desc: 'Astral plane warriors divided into Githyanki dragon-riders and Githzerai monks.', img: 'Gith.png' },
+      { id: 'gnoll', cat: 'monstrous', title: 'Gnoll', sub: 'Rampage, Hyena Instincts', desc: 'Hyena-like trackers known for relentless momentum and pack tactics.', img: 'Gnoll.png' },
+      { id: 'gnome', cat: 'core', title: 'Gnome', sub: 'Gnome Cunning, Darkvision, Tinker', desc: 'Diminutive, energetic inventors and illusions masters full of enthusiasm.', img: 'Gnome.png' },
+      { id: 'goblin', cat: 'monstrous', title: 'Goblin', sub: 'Nimble Escape, Fury of Small', desc: 'Small, agile tricksters who excel at slipping out of danger and ambushing larger foes.', img: 'Goblin.png' },
+      { id: 'golem', cat: 'construct', title: 'Golem', sub: 'Clay/Stone Core, Construct Body', desc: 'Artificially constructed titans animated by elemental bound spirits.', img: 'Golem.jpg' },
+      { id: 'goliath', cat: 'core', title: 'Goliath', sub: 'Stone Endurance, Powerful Build', desc: 'Massive, tattooed mountain wanderers who value personal honor and athletic competition.', img: 'Goliath.png' },
+      { id: 'gorgon', cat: 'monstrous', title: 'Gorgon', sub: 'Snake Hair, Petrifying Gaze', desc: 'Serpentine humanoids endowed with terrifying gaze attacks and reptilian reflexes.', img: 'Gorgon.jpg' },
+      { id: 'halfling', cat: 'core', title: 'Halfling', sub: 'Lucky, Brave, Nimble', desc: 'Cheerful, peace-loving folk whose legendary good luck turns the tides of battle.', img: 'Halfling.png' },
+      { id: 'harengon', cat: 'fey', title: 'Harengon', sub: 'Rabbit Hop, Lucky Footwork', desc: 'Anthropomorphic rabbit folk originating from the Feywild, full of energy and speed.', img: 'Harengon.jpg' },
+      { id: 'hexblood', cat: 'construct', title: 'Hexblood', sub: 'Eerie Token, Hex Magic', desc: 'Infused with hag magic, hexbloods display eldritch crowns and eerie sensory powers.', img: 'Hexblood.png' },
+      { id: 'hobgoblin', cat: 'monstrous', title: 'Hobgoblin', sub: 'Martial Training, Group Tactics', desc: 'Disciplined military strategists among goblinoids with unwavering group tactics.', img: 'Hobgoblin.png' },
+      { id: 'human', cat: 'core', title: 'Human', sub: 'Versatile, Adaptable, Skilled', desc: 'Driven and resourceful pioneers capable of accomplishing anything with ambition.', img: 'Human.jpg' },
+      { id: 'illithidkin', cat: 'planar', title: 'Illithidkin', sub: 'Mind Blast, Telepathy', desc: 'Descendants or creations influenced by mind flayers, wielding mental powers.', img: 'Illithidkin.png' },
+      { id: 'kalashtar', cat: 'planar', title: 'Kalashtar', sub: 'Dual Mind, Telepathic Bond', desc: 'Compound beings bound to dream spirits, known for tranquil mental discipline.', img: 'Kalashtar.png' },
+      { id: 'karokan', cat: 'monstrous', title: 'Karokan', sub: 'Chitinous Shell, Sand Burrower', desc: 'Desert crab-like humanoids protected by heavy exoskeletons and claw attacks.', img: 'Karokan.png' },
+      { id: 'khoravar', cat: 'core', title: 'Khoravar', sub: 'Half-Elf Adaptability, Skill', desc: 'Half-elves who have forged a distinct culture combining human drive and elven magic.', img: 'Khoravar.jpg' },
+      { id: 'kitsune', cat: 'fey', title: 'Kitsune', sub: 'Fox Form, Fox-fire Illusion', desc: 'Mystical fox folk who can shift into human guise and weave magical illusions.', img: 'Kitsune.png' },
+      { id: 'kuo-toa', cat: 'monstrous', title: 'Kuo-toa', sub: 'Amphibious, Otherworldly Sense', desc: 'Subterranean fish-like beings whose strange beliefs can shape godlike entities.', img: 'Kuo-toa.png' },
+      { id: 'leshy', cat: 'fey', title: 'Leshy', sub: 'Plant Body, Forest Camouflage', desc: 'Small plant spirits embodied in gourds, wood, or moss with forest ward magic.', img: 'Leshy.png' },
+      { id: 'living-doll', cat: 'construct', title: 'Living Doll', sub: 'Porcelain Shell, False Appearance', desc: 'Enchanted mannequins given sentience, grace, and uncanny presence.', img: 'Living Doll.jpg' },
+      { id: 'lizardfolk', cat: 'monstrous', title: 'Lizardfolk', sub: 'Natural Armor, Hungry Jaws', desc: 'Reptilian survivalists who view the world with calm, pragmatic instincts.', img: 'Lizardfolk.png' },
+      { id: 'locathah', cat: 'monstrous', title: 'Locathah', sub: 'Natural Armor, Swim Speed', desc: 'Resilient fishfolk of coastal seas known for tight-knit community bonds.', img: 'Locathah.jpg' },
+      { id: 'lupin', cat: 'monstrous', title: 'Lupin', sub: 'Scent Tracker, Pack Instincts', desc: 'Noble wolf-like humanoids known for loyalty, tracker senses, and martial discipline.', img: 'Lupin.png' },
+      { id: 'merfolk', cat: 'monstrous', title: 'Merfolk', sub: 'Amphibious, Siren Song', desc: 'Rulers of oceanic kingdoms who swim gracefully and command sea currents.', img: 'Merfolk.png' },
+      { id: 'mul', cat: 'core', title: 'Mul', sub: 'Tireless Endurance, Strength', desc: 'Tough hybrids combining dwarf stamina with human height and versatility.', img: 'Mul.png' },
+      { id: 'myconid', cat: 'fey', title: 'Myconid', sub: 'Rapport Spores, Fungal Body', desc: 'Gentle mushroom folk who communicate through telepathic spore clouds.', img: 'Myconid.png' },
+      { id: 'ogre', cat: 'monstrous', title: 'Ogre', sub: 'Brute Strength, Heavy Attack', desc: 'Massive, muscular warriors who crush defenses with raw size and force.', img: 'Ogre.png' },
+      { id: 'orc', cat: 'core', title: 'Orc', sub: 'Adrenaline Rush, Relentless', desc: 'Passionate and physically formidable champions of tribal honors.', img: 'Orc.png' },
+      { id: 'plasmoid', cat: 'planar', title: 'Plasmoid', sub: 'Amorphous Body, Pseudopod', desc: 'Ooze-like shapeshifters capable of squeezing into narrow spaces.', img: 'Plasmoid.png' },
+      { id: 'ratfolk', cat: 'monstrous', title: 'Ratfolk', sub: 'Swarm Tactics, Tinkering', desc: 'Clever rodent humanoids who thrive in bustling markets and sewer labyrinths.', img: 'Ratfolk.png' },
+      { id: 'reborn', cat: 'construct', title: 'Reborn', sub: 'Deathless Nature, Past Life Knowledge', desc: 'Individuals returned to life with mysterious origins and forgotten pasts.', img: 'Reborn.jpg' },
+      { id: 'revenant', cat: 'construct', title: 'Revenant', sub: 'Relentless Vengeance, Undead Resilience', desc: 'Undying heroes driven by a soul vow to achieve vengeance or justice.', img: 'Revenant.png' },
+      { id: 'satyr', cat: 'fey', title: 'Satyr', sub: 'Magic Resistance, Mirthful Leap', desc: 'Brimming with Feywild joy, satyrs are goat-legged performers and revelers.', img: 'Satyr.png' },
+      { id: 'shadar-kai', cat: 'planar', title: 'Shadar-Kai', sub: 'Shadow Step, Necrotic Resistance', desc: 'Shadowfell elves serving the Raven Queen with ghostly teleportation skills.', img: 'Shadar-Kai.png' },
+      { id: 'shardmind', cat: 'planar', title: 'Shardmind', sub: 'Crystalline Body, Telepathy', desc: 'Psionic beings composed of floating translucent psychically charged crystals.', img: 'Shardmind.png' },
+      { id: 'shifter', cat: 'fey', title: 'Shifter', sub: 'Beast Shifting, Senses', desc: 'Humanoids with lycanthropic ancestry who shift into feral forms in combat.', img: 'Shifter.png' },
+      { id: 'spirit-folk', cat: 'fey', title: 'Spirit Folk', sub: 'Nature Spirit Affinity', desc: 'Descendants of humans and river, forest, or mountain nature spirits.', img: 'Spirit Folk.png' },
+      { id: 'strix', cat: 'monstrous', title: 'Strix', sub: 'Owl Wings, Nightvision', desc: 'Feathered owl-like humanoids who glide silently from mountain roosts.', img: 'Strix.png' },
+      { id: 'suli', cat: 'planar', title: 'Suli', sub: 'Elemental Assault, Energy Shield', desc: 'Mortals touched by jann genies, embodying all four elemental forces.', img: 'Suli.png' },
+      { id: 'tabaxi', cat: 'fey', title: 'Tabaxi', sub: 'Feline Agility, Cat Claws', desc: 'Catlike humanoids driven by wanderlust, stories, and sudden bursts of speed.', img: 'Tabaxi.png' },
+      { id: 'tengu', cat: 'monstrous', title: 'Tengu', sub: 'Crow Beak, Sword Master', desc: 'Crow-faced avian folk known for weapon mastery and scavenging secrets.', img: 'Tengu.png' },
+      { id: 'thri-kreen', cat: 'planar', title: 'Thri-Kreen', sub: 'Chameleon Carapace, Extra Arms', desc: 'Mantisfolk with chitinous armor, extra arms, and quiet insect minds.', img: 'Thri-Kreen.png' },
+      { id: 'tiefling', cat: 'core', title: 'Tiefling', sub: 'Darkvision, Hellish Resistance', desc: 'Bearing infernal heritage, tieflings wield flames and charismatic presence.', img: 'Tiefling.png' },
+      { id: 'tortle', cat: 'fey', title: 'Tortle', sub: 'Natural Shell Armor, Shell Defense', desc: 'Turtle-like reptilian wanderers who carry their homes on their backs.', img: 'Tortle.png' },
+      { id: 'ursine', cat: 'monstrous', title: 'Ursine', sub: 'Thick Fur, Bear Endurance', desc: 'Bear-folk champions of frozen wilderness and mountain passes.', img: 'Ursine.jpg' },
+      { id: 'vanara', cat: 'fey', title: 'Vanara', sub: 'Prehensile Tail, Acrobat', desc: 'Monkey-like humanoids known for curiosity, acrobatics, and wisdom.', img: 'Vanara.png' },
+      { id: 'vashar', cat: 'planar', title: 'Vashar', sub: 'Magic Resistance, Unyielding', desc: 'An ancient, solitary variant human lineage resistant to divine forces.', img: 'Vashar.png' },
+      { id: 'vedalken', cat: 'planar', title: 'Vedalken', sub: 'Vedalken Dispassion, Precision', desc: 'Tall blue-skinned scholars who aim for perfection in every magical craft.', img: 'Vedalken.png' },
+      { id: 'warforged', cat: 'construct', title: 'Warforged', sub: 'Integrated Armor, Constructed Resilience', desc: 'Living constructs built from wood and metal, imbued with conscious souls.', img: 'Warforged.png' },
+      { id: 'yeti-kin', cat: 'monstrous', title: 'Yeti-Kin', sub: 'Cold Immunity, Snow Camouflage', desc: 'Fur-covered frost humanoids adapted to sub-zero blizzards.', img: 'Yeti.png' },
+      { id: 'yuan-ti', cat: 'monstrous', title: 'Yuan-Ti', sub: 'Poison Immunity, Serpentine', desc: 'Serpent-blooded lineages with cold intellect and ancient empire roots.', img: 'Yuan-Ti.png' }
+    ];
+
+    // CLASS DATA
+    const CLASS_DATA = [
+      { id: 'alchemist', title: 'Alchemist', sub: 'Hit Die: d6', hitDie: 6, desc: 'A master of chemical mixtures, potions, and explosive concoctions.', img: 'Alchemist.png' },
+      { id: 'artificer', title: 'Artificer', sub: 'Hit Die: d8', hitDie: 8, desc: 'An intelligence-based inventor and crafter of magical items, elixirs, and mechanical constructs.', img: 'Artificer.png' },
+      { id: 'barbarian', title: 'Barbarian', sub: 'Hit Die: d12', hitDie: 12, desc: 'A fierce frontline warrior who enters combat rages for massive damage resistance and power.', img: 'Barbarian.png' },
+      { id: 'bard', title: 'Bard', sub: 'Hit Die: d8', hitDie: 8, desc: 'A versatile performer who uses music, magic, and inspiration to support allies and manipulate foes.', img: 'Bard.png' },
+      { id: 'captain', title: 'Captain', sub: 'Hit Die: d8', hitDie: 8, desc: 'A tactical leader who inspires allies, coordinates maneuvers, and directs the flow of battle.', img: 'Captain.png' },
+      { id: 'cleric', title: 'Cleric', sub: 'Hit Die: d8', hitDie: 8, desc: 'A divine spellcaster dedicated to a deity, capable of healing, support, and formidable magic.', img: 'Cleric.png' },
+      { id: 'craftsman', title: 'Craftsman', sub: 'Hit Die: d10', hitDie: 10, desc: 'A master builder who reforges armor, repairs gear, and unleashes engineered creations.', img: 'Craftsman.png' },
+      { id: 'druid', title: 'Druid', sub: 'Hit Die: d8', hitDie: 8, desc: 'A nature priest who commands elemental forces, casts primal magic, and wild-shapes into beasts.', img: 'Druid.png' },
+      { id: 'fighter', title: 'Fighter', sub: 'Hit Die: d10', hitDie: 10, desc: 'A master of martial combat and weapon techniques with unmatched action versatility.', img: 'Fighter.png' },
+      { id: 'gunslinger', title: 'Gunslinger', sub: 'Hit Die: d8', hitDie: 8, desc: 'A sharpshooter who specializes in firearms, trick shots, and rapid ballistic precision.', img: 'Gunslinger.png' },
+      { id: 'investigator', title: 'Investigator', sub: 'Hit Die: d8', hitDie: 8, desc: 'A sharp-eyed sleuth who analyzes clues, exploits enemy weaknesses, and solves mysteries.', img: 'Investigator.png' },
+      { id: 'martyr', title: 'Martyr', sub: 'Hit Die: d12', hitDie: 12, desc: 'A self-sacrificing protector who absorbs damage meant for allies and unleashes holy zeal.', img: 'Martyr.png' },
+      { id: 'monk', title: 'Monk', sub: 'Hit Die: d8', hitDie: 8, desc: 'A martial artist who channels inner ki energy for rapid strikes and acrobatic defense.', img: 'Monk.png' },
+      { id: 'necromancer', title: 'Necromancer', sub: 'Hit Die: d6', hitDie: 6, desc: 'A dark arcane scholar who commands undead minions and drains life force.', img: 'Necromancer.png' },
+      { id: 'paladin', title: 'Paladin', sub: 'Hit Die: d10', hitDie: 10, desc: 'A holy knight bound by a sacred oath who blends martial prowess with divine smites and healing.', img: 'Paladin.png' },
+      { id: 'psion', title: 'Psion', sub: 'Hit Die: d6', hitDie: 6, desc: 'An intelligence-based psychic spellcaster who manipulates the mind and reality using psionic energy dice.', img: 'Psion.png' },
+      { id: 'ranger', title: 'Ranger', sub: 'Hit Die: d10', hitDie: 10, desc: 'A wilderness scout and tracker who combines weapon skill with nature magic.', img: 'Ranger.png' },
+      { id: 'rogue', title: 'Rogue', sub: 'Hit Die: d8', hitDie: 8, desc: 'A stealthy skirmisher who relies on sneak attacks, skill mastery, and agility.', img: 'Rogue.png' },
+      { id: 'sorcerer', title: 'Sorcerer', sub: 'Hit Die: d6', hitDie: 6, desc: 'An innate spellcaster who draws raw, chaotic magic straight from their bloodline.', img: 'Sorcerer.png' },
+      { id: 'warden', title: 'Warden', sub: 'Hit Die: d10', hitDie: 10, desc: 'A rugged protector of nature and borders who binds foes and shields the innocent.', img: 'Warden.png' },
+      { id: 'warmage', title: 'Warmage', sub: 'Hit Die: d8', hitDie: 8, desc: 'A battle-hardened spellcaster trained to unleash destructive combat magic on front lines.', img: 'Warmage.png' },
+      { id: 'warlock', title: 'Warlock', sub: 'Hit Die: d8', hitDie: 8, desc: 'A seeker of arcane secrets who wields eldritch magic granted by an otherworldly patron.', img: 'Warlock.png' },
+      { id: 'witch', title: 'Witch', sub: 'Hit Die: d8', hitDie: 8, desc: 'A practitioner of folk magic, curses, hexes, and brewing mysterious potions.', img: 'Witch.png' },
+      { id: 'wizard', title: 'Wizard', sub: 'Hit Die: d6', hitDie: 6, desc: 'A scholarly magic-user who masters a vast array of arcane spells through study and a spellbook.', img: 'Wizard.png' }
+    ];
+
+    // BACKGROUND DATA
+    const BACKGROUND_DATA = [
+      { id: 'acolyte', title: 'Acolyte', sub: 'Skills: Insight, Religion', desc: 'You spent your youth in service to a temple, learning sacred rites and religious devotions.', img: 'Acolyte.png' },
+      { id: 'artisan', title: 'Artisan', sub: 'Skills: Crafting, Persuasion', desc: 'You mastered a trade or craft, skilled in creating functional goods and practical creations.', img: 'Artisan.png' },
+      { id: 'charlatan', title: 'Charlatan', sub: 'Skills: Deception, Sleight of Hand', desc: 'You know people, what makes them tick, and how to manipulate their desires to your benefit.', img: 'Charlatan.png' },
+      { id: 'criminal', title: 'Criminal', sub: 'Skills: Deception, Stealth', desc: 'You have a history of breaking the law and surviving in shadowy underworld networks.', img: 'Criminal.png' },
+      { id: 'entertainer', title: 'Entertainer', sub: 'Skills: Acrobatics, Performance', desc: 'You thrive in front of an audience, knowing how to entrance, entertain, and captivate crowds.', img: 'Entertainer.png' },
+      { id: 'farmer', title: 'Farmer', sub: 'Skills: Animal Handling, Nature', desc: 'You grew up tending crops, working livestock, and learning the rhythms of rural life.', img: 'Farmer.png' },
+      { id: 'guard', title: 'Guard', sub: 'Skills: Athletics, Perception', desc: 'You served as a city watch guard, sentry, or bodyguard trained to stay vigilant and enforce order.', img: 'Guard.png' },
+      { id: 'guide', title: 'Guide', sub: 'Skills: Navigation, Survival', desc: 'You led travelers, merchants, and explorers through treacherous wilderness terrain.', img: 'Guide.png' },
+      { id: 'hermit', title: 'Hermit', sub: 'Skills: Medicine, Religion', desc: 'You lived in solitude for a formative part of your life, discovering deep quiet truths.', img: 'Hermit.png' },
+      { id: 'merchant', title: 'Merchant', sub: 'Skills: Insight, Persuasion', desc: 'You understand commerce, trade routes, bargaining, and evaluating the true worth of goods.', img: 'Merchant.png' },
+      { id: 'noble', title: 'Noble', sub: 'Skills: History, Persuasion', desc: 'You understand wealth, power, and privilege, brought up with courtly etiquette and high status.', img: 'Noble.png' },
+      { id: 'sage', title: 'Sage', sub: 'Skills: Arcana, History', desc: 'You spent years studying ancient lore, manuscripts, and cosmic secrets in grand libraries.', img: 'Sage.png' },
+      { id: 'sailor', title: 'Sailor', sub: 'Skills: Athletics, Perception', desc: 'You navigated sea storms, coastal currents, and ocean voyages aboard ships.', img: 'Sailor.png' },
+      { id: 'scribe', title: 'Scribe', sub: 'Skills: History, Linguistics', desc: 'You transcribed important legal records, historical documents, and scholarly manuscripts.', img: 'Scribe.png' },
+      { id: 'soldier', title: 'Soldier', sub: 'Skills: Athletics, Intimidation', desc: 'War has been your life. You possess battlefield training, military discipline, and combat grit.', img: 'Soldier.png' },
+      { id: 'wayfarer', title: 'Wayfarer', sub: 'Skills: Perception, Survival', desc: 'You spent your youth roaming roads, trails, and rural towns without a permanent home.', img: 'Wayfarer.png' }
+    ];
+
+    // STATE
+    let appData = JSON.parse(localStorage.getItem('rpg_character_app_data')) || {
+      species: SPECIES_DATA,
+      classes: CLASS_DATA,
+      backgrounds: BACKGROUND_DATA
+    };
+
+    let currentStep = 1;
+    let selectedCatFilter = 'all';
+    let selectedChar = {
+      name: '',
+      player: '',
+      level: 1,
+      species: null,
+      class: null,
+      background: null,
+      stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      mods: { str: false, dex: false, con: false, int: false, wis: false, cha: false },
+      saves: { str: false, dex: false, con: false, int: false, wis: false, cha: false },
+      skills: {}
+    };
+
+    function getSvgPlaceholder(text) {
+      const encoded = encodeURIComponent(text);
+      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%2312101a"/><path d="M150 40 L210 160 L90 160 Z" fill="none" stroke="%233a354c" stroke-width="3"/><circle cx="150" cy="100" r="30" fill="none" stroke="%23d4af37" stroke-width="2"/><text x="50%" y="85%" font-family="sans-serif" font-size="16" font-weight="bold" fill="%23d4af37" text-anchor="middle">${encoded}</text></svg>`;
+    }
+
+    window.onload = function() {
+      populateLevelDropdown();
+      populateSkillToggles();
+      renderGrids();
+      updateWizardUI();
+    };
+
+    function populateLevelDropdown() {
+      const select = document.getElementById('input-level-select');
+      select.innerHTML = '';
+      for (let i = 1; i <= 20; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = `Level ${i}`;
+        select.appendChild(opt);
+      }
+    }
+
+    function populateSkillToggles() {
+      const container = document.getElementById('skills-toggle-container');
+      container.innerHTML = '';
+      SKILLS_LIST.forEach(skill => {
+        const label = document.createElement('label');
+        label.className = 'toggle-item';
+        label.innerHTML = `<input type="checkbox" id="skill-chk-${skill.name.replace(/\s+/g, '')}" onchange="updateToggles()"> ${skill.name} <span style="font-size:0.65rem; color:var(--text-muted)">(${skill.stat.toUpperCase()})</span>`;
+        container.appendChild(label);
+      });
+    }
+
+    function renderGrids() {
+      renderSpeciesGrid();
+      renderGenericGrid('classes', 'class-grid');
+      renderGenericGrid('backgrounds', 'bg-grid');
+    }
+
+    function renderSpeciesGrid() {
+      const container = document.getElementById('species-grid');
+      const searchVal = (document.getElementById('species-search')?.value || '').toLowerCase();
+      container.innerHTML = '';
+
+      const filtered = appData.species.filter(item => {
+        const matchesCat = selectedCatFilter === 'all' || item.cat === selectedCatFilter;
+        const matchesSearch = item.title.toLowerCase().includes(searchVal) ||
+                            item.sub.toLowerCase().includes(searchVal) ||
+                            item.desc.toLowerCase().includes(searchVal);
+        return matchesCat && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:3rem; color:var(--text-muted)">No species found matching your filters.</div>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const isSelected = selectedChar.species?.id === item.id;
+        const card = document.createElement('div');
+        card.className = `rpg-card ${isSelected ? 'selected' : ''}`;
+        card.onclick = () => selectCard('species', item);
+
+        const imgSrc = item.img || getSvgPlaceholder(item.title);
+
+        card.innerHTML = `
+          <div class="card-img-wrapper">
+            <img class="card-img" src="${imgSrc}" alt="${item.title}" onerror="this.style.display='none'">
+            ${isSelected ? '<div class="selected-check">✓</div>' : ''}
+            <span class="badge-tag">${item.cat}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-title">${item.title}</div>
+            <div class="card-subtitle">${item.sub}</div>
+            <div class="card-desc">${item.desc}</div>
+          </div>
+          <div class="card-footer">
+            <button class="card-select-btn">${isSelected ? '✓ Selected' : 'Choose ' + item.title}</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderGenericGrid(catKey, gridId) {
+      const container = document.getElementById(gridId);
+      container.innerHTML = '';
+
+      appData[catKey].forEach(item => {
+        const charKey = catKey === 'classes' ? 'class' : 'background';
+        const isSelected = selectedChar[charKey]?.id === item.id;
+        const card = document.createElement('div');
+        card.className = `rpg-card ${isSelected ? 'selected' : ''}`;
+        card.onclick = () => selectCard(catKey, item);
+
+        const imgSrc = item.img || getSvgPlaceholder(item.title);
+
+        card.innerHTML = `
+          <div class="card-img-wrapper">
+            <img class="card-img" src="${imgSrc}" alt="${item.title}" onerror="this.style.display='none'">
+            ${isSelected ? '<div class="selected-check">✓</div>' : ''}
+          </div>
+          <div class="card-body">
+            <div class="card-title">${item.title}</div>
+            <div class="card-subtitle">${item.sub}</div>
+            <div class="card-desc">${item.desc}</div>
+          </div>
+          <div class="card-footer">
+            <button class="card-select-btn">${isSelected ? '✓ Selected' : 'Choose ' + item.title}</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function selectCard(category, item) {
+      if (category === 'species') selectedChar.species = item;
+      if (category === 'classes') selectedChar.class = item;
+      if (category === 'backgrounds') selectedChar.background = item;
+
+      renderGrids();
+
+      setTimeout(() => {
+        if (currentStep < 5) {
+          nextStep(1);
+        }
+      }, 200);
+    }
+
+    function filterSpecies() {
+      renderSpeciesGrid();
+    }
+
+    function filterCategory(cat) {
+      selectedCatFilter = cat;
+      document.querySelectorAll('#species-cat-tags .tag-btn').forEach(btn => {
+        if (btn.getAttribute('data-cat') === cat) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      renderSpeciesGrid();
+    }
+
+    function updateCharName(val) {
+      selectedChar.name = val;
+    }
+
+    function updatePlayerName(val) {
+      selectedChar.player = val;
+    }
+
+    function updateLevel(val) {
+      selectedChar.level = parseInt(val) || 1;
+    }
+
+    function updateStats() {
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+        const scoreVal = parseInt(document.getElementById(`stat-${stat}`).value) || 10;
+        const modCheck = document.getElementById(`mod-${stat}`).checked;
+        selectedChar.stats[stat] = scoreVal;
+        selectedChar.mods[stat] = modCheck;
+      });
+    }
+
+    function updateToggles() {
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+        selectedChar.saves[stat] = document.getElementById(`save-${stat}`).checked;
+      });
+
+      SKILLS_LIST.forEach(skill => {
+        const id = `skill-chk-${skill.name.replace(/\s+/g, '')}`;
+        selectedChar.skills[skill.name] = document.getElementById(id)?.checked || false;
+      });
+    }
+
+    function getProficiencyBonus(lvl) {
+      if (lvl <= 4) return 2;
+      if (lvl <= 8) return 3;
+      if (lvl <= 12) return 4;
+      if (lvl <= 16) return 5;
+      return 6;
+    }
+
+    function calcModNum(score, hasBonus = false) {
+      const finalScore = score + (hasBonus ? 2 : 0);
+      return Math.floor((finalScore - 10) / 2);
+    }
+
+    function formatMod(modNum) {
+      return modNum >= 0 ? `+${modNum}` : `${modNum}`;
+    }
+
+    function nextStep(delta) {
+      const target = currentStep + delta;
+
+      if (delta > 0) {
+        if (currentStep === 1 && !selectedChar.species) return showToast('Please select a Species first!');
+        if (currentStep === 2 && !selectedChar.class) return showToast('Please select a Class first!');
+        if (currentStep === 3 && !selectedChar.background) return showToast('Please select a Background first!');
+      }
+
+      if (target >= 1 && target <= 5) {
+        currentStep = target;
+        updateWizardUI();
+      }
+    }
+
+    function goToStep(step) {
+      if (step > 1 && !selectedChar.species) return showToast('Please select a Species first!');
+      if (step > 2 && !selectedChar.class) return showToast('Please select a Class first!');
+      if (step > 3 && !selectedChar.background) return showToast('Please select a Background first!');
+
+      currentStep = step;
+      updateWizardUI();
+    }
+
+    function updateWizardUI() {
+      for (let i = 1; i <= 5; i++) {
+        const panel = document.getElementById(`step-section-${i}`);
+        const btn = document.getElementById(`step-btn-${i}`);
+        
+        if (i === currentStep) {
+          panel.classList.remove('hidden');
+          btn.className = 'step-item active';
+        } else if (i < currentStep) {
+          panel.classList.add('hidden');
+          btn.className = 'step-item completed';
+        } else {
+          panel.classList.add('hidden');
+          btn.className = 'step-item';
+        }
+      }
+
+      const progressPercent = ((currentStep - 1) / 4) * 100;
+      document.getElementById('progress-line').style.width = `${progressPercent}%`;
+
+      const prevBtn = document.getElementById('nav-prev-btn');
+      const nextBtn = document.getElementById('nav-next-btn');
+      const statusText = document.getElementById('nav-status-text');
+
+      prevBtn.disabled = currentStep === 1;
+
+      if (currentStep === 1) {
+        statusText.innerText = 'Step 1 of 5: Select Species';
+        nextBtn.innerText = 'Next: Class →';
+      } else if (currentStep === 2) {
+        statusText.innerText = 'Step 2 of 5: Select Class';
+        nextBtn.innerText = 'Next: Background →';
+      } else if (currentStep === 3) {
+        statusText.innerText = 'Step 3 of 5: Select Background';
+        nextBtn.innerText = 'Next: Stats & Level →';
+      } else if (currentStep === 4) {
+        statusText.innerText = 'Step 4 of 5: Ability Scores & Level';
+        nextBtn.innerText = 'View Character Summary →';
+      } else if (currentStep === 5) {
+        statusText.innerText = 'Step 5 of 5: Character Sheet Ready';
+        nextBtn.innerText = 'Finish ✓';
+        renderCharacterSheet();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // RENDER FULL D&D CHARACTER SHEET SUMMARY
+    function renderCharacterSheet() {
+      const sp = selectedChar.species || appData.species[0];
+      const cl = selectedChar.class || appData.classes[0];
+      const bg = selectedChar.background || appData.backgrounds[0];
+      const lvl = selectedChar.level || 1;
+      const prof = getProficiencyBonus(lvl);
+
+      // Header Info
+      document.getElementById('cs-char-name').innerText = selectedChar.name.trim() !== '' ? selectedChar.name : 'Unnamed Hero';
+      document.getElementById('cs-hdr-class').innerText = `${cl.title} ${lvl}`;
+      document.getElementById('cs-hdr-species').innerText = sp.title;
+      document.getElementById('cs-hdr-bg').innerText = bg.title;
+      document.getElementById('cs-hdr-player').innerText = selectedChar.player.trim() !== '' ? selectedChar.player : 'Player';
+      document.getElementById('cs-hdr-prof').innerText = `+${prof}`;
+
+      // Calculated Mods
+      const mods = {};
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(s => {
+        const score = selectedChar.stats[s] + (selectedChar.mods[s] ? 2 : 0);
+        mods[s] = Math.floor((score - 10) / 2);
+      });
+
+      // Ability Stack Render
+      const abContainer = document.getElementById('cs-ability-container');
+      abContainer.innerHTML = '';
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(s => {
+        const score = selectedChar.stats[s] + (selectedChar.mods[s] ? 2 : 0);
+        const card = document.createElement('div');
+        card.className = `cs-ability-card ${selectedChar.mods[s] ? 'modified' : ''}`;
+        card.innerHTML = `
+          <span class="cs-ability-label">${s.toUpperCase()}</span>
+          <span class="cs-ability-mod">${formatMod(mods[s])}</span>
+          <span class="cs-ability-score">${score}</span>
+        `;
+        abContainer.appendChild(card);
+      });
+
+      // Saving Throws Render
+      const savesContainer = document.getElementById('cs-saves-container');
+      savesContainer.innerHTML = '';
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(s => {
+        const isProf = selectedChar.saves[s];
+        const totalMod = mods[s] + (isProf ? prof : 0);
+        const item = document.createElement('div');
+        item.className = 'cs-list-item';
+        item.innerHTML = `
+          <span class="cs-dot ${isProf ? 'active' : ''}"></span>
+          <span class="cs-list-val">${formatMod(totalMod)}</span>
+          <span class="cs-list-lbl">${s.toUpperCase()}</span>
+        `;
+        savesContainer.appendChild(item);
+      });
+
+      // Combat Stats Render
+      document.getElementById('cs-val-ac').innerText = 10 + mods.dex;
+      document.getElementById('cs-val-init').innerText = formatMod(mods.dex);
+
+      const hitDieVal = cl.hitDie || 8;
+      const avgHd = Math.floor(hitDieVal / 2) + 1;
+      const totalHp = (hitDieVal + mods.con) + ((lvl - 1) * (avgHd + mods.con));
+
+      document.getElementById('cs-val-hp').innerText = Math.max(1, totalHp);
+      document.getElementById('cs-val-hitdie').innerText = `${lvl}d${hitDieVal}`;
+
+      // Skills List Render
+      const skillsContainer = document.getElementById('cs-skills-container');
+      skillsContainer.innerHTML = '';
+      SKILLS_LIST.forEach(skill => {
+        const isProf = selectedChar.skills[skill.name] || false;
+        const totalMod = mods[skill.stat] + (isProf ? prof : 0);
+        const item = document.createElement('div');
+        item.className = 'cs-list-item';
+        item.innerHTML = `
+          <span class="cs-dot ${isProf ? 'active' : ''}"></span>
+          <span class="cs-list-val">${formatMod(totalMod)}</span>
+          <span class="cs-list-lbl">${skill.name} <span style="font-size:0.6rem; color:var(--text-muted)">(${skill.stat.toUpperCase()})</span></span>
+        `;
+        skillsContainer.appendChild(item);
+      });
+
+      // Passive Senses
+      const percProf = selectedChar.skills['Perception'] || false;
+      const invProf = selectedChar.skills['Investigation'] || false;
+      const insProf = selectedChar.skills['Insight'] || false;
+
+      document.getElementById('cs-passive-perception').innerText = 10 + mods.wis + (percProf ? prof : 0);
+      document.getElementById('cs-passive-investigation').innerText = 10 + mods.int + (invProf ? prof : 0);
+      document.getElementById('cs-passive-insight').innerText = 10 + mods.wis + (insProf ? prof : 0);
+
+      // Feature Cards (Species, Class, BG)
+      document.getElementById('cs-img-species').src = sp.img || getSvgPlaceholder(sp.title);
+      document.getElementById('cs-title-species').innerText = sp.title;
+      document.getElementById('cs-sub-species').innerText = sp.sub;
+      document.getElementById('cs-desc-species').innerText = sp.desc;
+
+      document.getElementById('cs-img-class').src = cl.img || getSvgPlaceholder(cl.title);
+      document.getElementById('cs-title-class').innerText = cl.title;
+      document.getElementById('cs-sub-class').innerText = cl.sub;
+      document.getElementById('cs-desc-class').innerText = cl.desc;
+
+      document.getElementById('cs-img-bg').src = bg.img || getSvgPlaceholder(bg.title);
+      document.getElementById('cs-title-bg').innerText = bg.title;
+      document.getElementById('cs-sub-bg').innerText = bg.sub;
+      document.getElementById('cs-desc-bg').innerText = bg.desc;
+    }
+
+    function resetAllSelections() {
+      if (confirm('Reset your character selections and start over?')) {
+        selectedChar = {
+          name: '', player: '', level: 1, species: null, class: null, background: null,
+          stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          mods: { str: false, dex: false, con: false, int: false, wis: false, cha: false },
+          saves: { str: false, dex: false, con: false, int: false, wis: false, cha: false },
+          skills: {}
+        };
+        document.getElementById('input-char-name').value = '';
+        document.getElementById('input-player-name').value = '';
+        currentStep = 1;
+        renderGrids();
+        updateWizardUI();
+        showToast('Selections reset.');
+      }
+    }
+
+    // TEACHER CONTENT EDITOR MODAL
+    function openEditorModal() {
+      document.getElementById('editor-modal').classList.add('active');
+      populateItemDropdown();
+    }
+
+    function closeEditorModal() {
+      document.getElementById('editor-modal').classList.remove('active');
+    }
+
+    function populateItemDropdown() {
+      const catKey = document.getElementById('edit-cat-select').value;
+      const itemSelect = document.getElementById('edit-item-select');
+      itemSelect.innerHTML = '';
+
+      appData[catKey].forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.innerText = item.title;
+        itemSelect.appendChild(opt);
+      });
+
+      loadItemToEditor();
+    }
+
+    function loadItemToEditor() {
+      const catKey = document.getElementById('edit-cat-select').value;
+      const itemId = document.getElementById('edit-item-select').value;
+      const item = appData[catKey].find(i => i.id === itemId);
+
+      if (!item) return;
+
+      document.getElementById('edit-input-title').value = item.title;
+      document.getElementById('edit-input-sub').value = item.sub;
+      document.getElementById('edit-input-desc').value = item.desc;
+      document.getElementById('edit-input-imgurl').value = item.img || '';
+    }
+
+    function handleFileSelect(evt) {
+      const file = evt.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('edit-input-imgurl').value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function saveCardEdits() {
+      const catKey = document.getElementById('edit-cat-select').value;
+      const itemId = document.getElementById('edit-item-select').value;
+      const itemIdx = appData[catKey].findIndex(i => i.id === itemId);
+
+      if (itemIdx !== -1) {
+        appData[catKey][itemIdx].title = document.getElementById('edit-input-title').value;
+        appData[catKey][itemIdx].sub = document.getElementById('edit-input-sub').value;
+        appData[catKey][itemIdx].desc = document.getElementById('edit-input-desc').value;
+        appData[catKey][itemIdx].img = document.getElementById('edit-input-imgurl').value;
+
+        localStorage.setItem('rpg_character_app_data', JSON.stringify(appData));
+        renderGrids();
+        closeEditorModal();
+        showToast('Card updated successfully!');
+      }
+    }
+
+    function resetCategoryToDefaults() {
+      const catKey = document.getElementById('edit-cat-select').value;
+      if (confirm(`Reset all ${catKey} cards back to original defaults?`)) {
+        if (catKey === 'species') appData.species = SPECIES_DATA;
+        if (catKey === 'classes') appData.classes = CLASS_DATA;
+        if (catKey === 'backgrounds') appData.backgrounds = BACKGROUND_DATA;
+
+        localStorage.setItem('rpg_character_app_data', JSON.stringify(appData));
+        renderGrids();
+        populateItemDropdown();
+        showToast(`Reset ${catKey} to default content.`);
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-msg');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
+
